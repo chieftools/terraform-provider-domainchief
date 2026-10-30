@@ -398,3 +398,61 @@ func importID(name string) resource.ImportStateIdFunc {
 		return rs.Primary.Attributes["domain"] + "/" + rs.Primary.ID, nil
 	}
 }
+
+func TestDNSRecordsDataSourceMarksManagedRecords(t *testing.T) {
+	api, url := newFakeAPI(t)
+
+	api.seedRecord(map[string]any{"type": "TXT", "name": "", "content": "v=spf1 -all", "ttl": 3600.0}, nil)
+	api.seedRecord(map[string]any{"type": "MX", "name": "", "content": "mx1.example.net", "ttl": 3600.0, "prio": 10.0}, map[string]any{
+		"domainchief:managed_feature":     "mail_forwarding",
+		"domainchief:managed_fingerprint": "abc",
+	})
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: fakeProviderConfig(url) + `
+data "domainchief_dns_records" "all" {
+  domain = "example.com"
+}
+
+data "domainchief_dns_records" "mx" {
+  domain = "example.com"
+  type   = "MX"
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("data.domainchief_dns_records.all", "records.#", "2"),
+					resource.TestCheckResourceAttr("data.domainchief_dns_records.all", "records.0.content", "v=spf1 -all"),
+					resource.TestCheckNoResourceAttr("data.domainchief_dns_records.all", "records.0.managed_by"),
+					resource.TestCheckResourceAttr("data.domainchief_dns_records.all", "records.1.managed_by", "mail_forwarding"),
+					resource.TestCheckResourceAttr("data.domainchief_dns_records.all", "records.1.priority", "10"),
+					resource.TestCheckResourceAttr("data.domainchief_dns_records.all", "records.1.metadata.%", "0"),
+					resource.TestCheckResourceAttr("data.domainchief_dns_records.mx", "records.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestDNSRecordAcceptsZeroPriorityForAnyType(t *testing.T) {
+	_, url := newFakeAPI(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: fakeProviderConfig(url) + `
+resource "domainchief_dns_record" "a" {
+  domain   = "example.com"
+  type     = "A"
+  content  = "192.0.2.1"
+  priority = 0
+}
+`,
+				Check: resource.TestCheckResourceAttr("domainchief_dns_record.a", "priority", "0"),
+			},
+		},
+	})
+}

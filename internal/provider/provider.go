@@ -112,6 +112,7 @@ func (p *domainChiefProvider) DataSources(_ context.Context) []func() datasource
 	return []func() datasource.DataSource{
 		newDomainDataSource,
 		newDomainsDataSource,
+		newDNSRecordsDataSource,
 	}
 }
 

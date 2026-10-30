@@ -37,6 +37,7 @@ The provider manages existing domains only, it does not register, transfer or de
 | `domainchief_dns_record` | A DNS record of a domain using hosted DNS |
 | `domainchief_web_redirect` | A web redirect of a domain or subdomain |
 | `domainchief_mail_forward` | A mail forward, mail forwarding must already be enabled for the domain |
+| `domainchief_dns_records` (data source) | The DNS records of a domain, for example to import an existing zone |
 | `domainchief_domain` (data source) | A domain in the team |
 | `domainchief_domains` (data source) | The domains in the team |
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"sort"
 	"strings"
 	"sync"
 	"testing"
@@ -90,6 +91,17 @@ func (a *fakeAPI) collection(w http.ResponseWriter, r *http.Request, items map[s
 	}
 
 	if len(rest) == 0 {
+		if r.Method == http.MethodGet {
+			list := make([]any, 0, len(items))
+			for _, id := range sortedKeys(items) {
+				list = append(list, items[id])
+			}
+
+			writeJSON(w, http.StatusOK, map[string]any{"data": list, "meta": map[string]any{"current_page": 1, "last_page": 1}})
+
+			return
+		}
+
 		if r.Method != http.MethodPost {
 			writeJSON(w, http.StatusMethodNotAllowed, map[string]any{"message": "Method not allowed."})
 
@@ -256,6 +268,31 @@ func fakeDomainBody() map[string]any {
 		"mail_forward_status":      "active",
 		"metadata":                 map[string]string{"customer": "acme"},
 	}
+}
+
+// seedRecord stores a record directly, like a record created outside Terraform.
+func (a *fakeAPI) seedRecord(input, metadata map[string]any) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	record := a.saveRecord(nil, input)
+	for key, value := range metadata {
+		record["metadata"].(map[string]string)[key] = value.(string) //nolint:forcetypeassert // test fixture
+	}
+
+	id := a.id()
+	record["id"] = id
+	a.records[id] = record
+}
+
+func sortedKeys(items map[string]map[string]any) []string {
+	keys := make([]string, 0, len(items))
+	for key := range items {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	return keys
 }
 
 func stringValue(value any) string {

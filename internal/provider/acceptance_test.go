@@ -237,6 +237,10 @@ data "domainchief_domain" "test" {
   domain = %q
 }
 
+data "domainchief_dns_records" "test" {
+  domain = %[1]q
+}
+
 data "domainchief_domains" "active" {
   status = "active"
 }
@@ -244,6 +248,7 @@ data "domainchief_domains" "active" {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.domainchief_domain.test", "is_using_hosted_dns", "true"),
 					resource.TestCheckResourceAttrSet("data.domainchief_domain.test", "id"),
+					resource.TestCheckResourceAttrSet("data.domainchief_dns_records.test", "records.0.id"),
 					resource.TestCheckResourceAttrSet("data.domainchief_domains.active", "domains.#"),
 				),
 			},
