@@ -57,6 +57,5 @@ release:
   extra_files:
     - glob: 'terraform-registry-manifest.json'
       name_template: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
-changelog:
-  # The release notes come from CHANGELOG.md, see bin/changelog-section.sh.
-  disable: true
+# The release notes come from CHANGELOG.md through --release-notes, see bin/changelog-section.sh.
+# Do not disable the changelog, GoReleaser then also ignores --release-notes.
