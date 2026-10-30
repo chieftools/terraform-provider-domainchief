@@ -57,7 +57,7 @@ resource "domainchief_dns_record" "spf" {
 - `comment` (String) An optional comment for the record.
 - `metadata` (Map of String) Metadata to attach to the record. Keys are at most 40 characters and cannot contain `[` or `]`, values are at most 500 characters. Keys starting with `domainchief:` are reserved for Domain Chief: they cannot be set and the ones Domain Chief adds are not tracked.
 - `name` (String) The record name relative to the domain, for example `www`. Use an empty string or `@` for the domain itself. Defaults to the domain itself.
-- `priority` (Number) The record priority, only for `MX` and `SRV` records. Defaults to `0`.
+- `priority` (Number) The record priority, only for `MX` and `SRV` records. Other record types always have a priority of `0`. Defaults to `0`.
 - `ttl` (Number) The record TTL in seconds, one of `60`, `300`, `900`, `1800`, `3600`, `21600`, `43200`, `86400`, `172800`, `259200`, `604800`, `1209600`, `2592000`. Defaults to `3600`.
 
 ### Read-Only

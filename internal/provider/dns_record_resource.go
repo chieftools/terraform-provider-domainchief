@@ -95,7 +95,7 @@ func (r *dnsRecordResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				Validators:          []validator.Int64{int64validator.OneOf(allowedTTLs...)},
 			},
 			"priority": schema.Int64Attribute{
-				MarkdownDescription: "The record priority, only for `MX` and `SRV` records. Defaults to `0`.",
+				MarkdownDescription: "The record priority, only for `MX` and `SRV` records. Other record types always have a priority of `0`. Defaults to `0`.",
 				Optional:            true,
 				Computed:            true,
 				Default:             int64default.StaticInt64(0),
@@ -124,7 +124,8 @@ func (r *dnsRecordResource) ValidateConfig(ctx context.Context, req resource.Val
 		return
 	}
 
-	if !config.Priority.IsNull() && !config.Priority.IsUnknown() && !recordTypesWithPriority[config.Type.ValueString()] {
+	// A priority of 0 is allowed for every type, it is what the API returns for types without a priority.
+	if !config.Priority.IsNull() && !config.Priority.IsUnknown() && config.Priority.ValueInt64() != 0 && !recordTypesWithPriority[config.Type.ValueString()] {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("priority"),
 			"Priority not supported",
