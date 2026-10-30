@@ -1,0 +1,114 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - run: go build -v ./...
+
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: latest
+
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_wrapper: false
+
+      - run: make generate
+
+      - name: Check for uncommitted documentation changes
+        run: |
+          git diff --compact-summary --exit-code || \
+            (echo; echo "Documentation is out of date, run 'make generate' and commit the result."; exit 1)
+
+  # Runs the unit tests and the provider tests against an in-memory fake of the API on every supported Terraform version.
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        terraform:
+          - '1.13.*'
+          - '1.14.*'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+
+      - run: go test -v -cover ./...
+
+  # Runs the acceptance tests against the real Domain Chief API.
+  # Needs the DOMAINCHIEF_TEST_DOMAIN repository variable and the DOMAINCHIEF_API_TOKEN repository secret.
+  acceptance:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name != 'pull_request'
+    concurrency:
+      group: acceptance
+    env:
+      DOMAINCHIEF_TEST_DOMAIN: ${{ vars.DOMAINCHIEF_TEST_DOMAIN }}
+      DOMAINCHIEF_TEST_MAIL_FORWARDING: ${{ vars.DOMAINCHIEF_TEST_MAIL_FORWARDING }}
+      DOMAINCHIEF_API_TOKEN: ${{ secrets.DOMAINCHIEF_API_TOKEN }}
+    steps:
+      - name: Check configuration
+        id: configured
+        run: |
+          if [ -n "$DOMAINCHIEF_TEST_DOMAIN" ] && [ -n "$DOMAINCHIEF_API_TOKEN" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Skipping acceptance tests, DOMAINCHIEF_TEST_DOMAIN or DOMAINCHIEF_API_TOKEN is not configured."
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.configured.outputs.ok == 'true'
+
+      - uses: actions/setup-go@v7
+        if: steps.configured.outputs.ok == 'true'
+        with:
+          go-version-file: go.mod
+
+      - uses: hashicorp/setup-terraform@v4
+        if: steps.configured.outputs.ok == 'true'
+        with:
+          terraform_wrapper: false
+
+      - name: Acceptance tests
+        if: steps.configured.outputs.ok == 'true'
+        run: make testacc

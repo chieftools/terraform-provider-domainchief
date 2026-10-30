@@ -1,0 +1,24 @@
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directories:
+      - "/"
+      - "/tools"
+    schedule:
+      interval: monthly
+      time: "10:00"
+      timezone: Europe/Amsterdam
+    labels:
+      - ":link: dependencies"
+    groups:
+      terraform-plugin:
+        patterns:
+          - "github.com/hashicorp/terraform-plugin-*"
+  - package-ecosystem: github-actions
+    directory: "/.github/workflows"
+    schedule:
+      interval: monthly
+      time: "10:00"
+      timezone: Europe/Amsterdam
+    labels:
+      - ":link: dependencies"

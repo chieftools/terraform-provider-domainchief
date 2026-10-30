@@ -1,0 +1,21 @@
+# Binaries
+/terraform-provider-domainchief
+*.exe
+*.test
+*.out
+dist/
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+
+# IDE
+/.idea/
+/.vscode/
+.DS_Store
+
+# Local acceptance test credentials
+.env
