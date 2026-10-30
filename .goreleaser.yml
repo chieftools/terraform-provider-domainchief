@@ -58,4 +58,5 @@ release:
     - glob: 'terraform-registry-manifest.json'
       name_template: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
 changelog:
-  use: github-native
+  # The release notes come from CHANGELOG.md, see bin/changelog-section.sh.
+  disable: true

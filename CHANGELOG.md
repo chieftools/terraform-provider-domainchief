@@ -1,9 +1,19 @@
-## 0.1.0 (Unreleased)
+# Changelog
 
-FEATURES:
+All notable changes to the Domain Chief Terraform provider are documented in this file.
 
-* **New Resource:** `domainchief_dns_record`
-* **New Resource:** `domainchief_web_redirect`
-* **New Resource:** `domainchief_mail_forward`
-* **New Data Source:** `domainchief_domain`
-* **New Data Source:** `domainchief_domains`
+Changes are grouped by release and type, with the newest release first. Release
+dates are available from the linked GitHub releases. Add future changes to the
+Unreleased section, then move them into a versioned section before tagging a
+release.
+
+## [Unreleased]
+
+### Added
+
+- `domainchief_dns_record` resource to manage the DNS records of domains using hosted DNS. Names and content keep the form they are written in, so `@`, uppercase names, trailing dots on hostnames and TXT content with or without quotes do not show up as changes. Metadata keys starting with `domainchief:` are managed by Domain Chief and are not tracked.
+- `domainchief_web_redirect` resource to manage web redirects of a domain or subdomain.
+- `domainchief_mail_forward` resource to manage mail forwards. Mail forwarding must already be enabled for the domain, the provider does not enable it because it is a paid feature.
+- `domainchief_domain` and `domainchief_domains` data sources to read the domains of the team.
+
+[Unreleased]: https://github.com/chieftools/terraform-provider-domainchief/commits/main

@@ -70,4 +70,12 @@ make generate
 
 ## Releasing
 
-Push a `vX.Y.Z` tag. The release workflow builds and signs the provider with GoReleaser and creates a GitHub release, the Terraform Registry picks up new releases automatically.
+Add changes to the Unreleased section of `CHANGELOG.md` as you make them. To release, run the release script from a clean `main` branch:
+
+```bash
+bin/release.sh 0.2.0
+```
+
+It moves the Unreleased changes under the new version, commits the changelog and creates the signed `v0.2.0` tag. Review the result, then push it with `git push --atomic origin main v0.2.0`, or pass `--push` to the script to push right away.
+
+The release workflow builds and signs the provider with GoReleaser and creates a GitHub release with the changelog section as release notes. The Terraform Registry picks up new releases automatically.
