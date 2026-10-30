@@ -9,6 +9,8 @@ release.
 
 ## [Unreleased]
 
+## [0.1.0]
+
 ### Added
 
 - `domainchief_dns_record` resource to manage the DNS records of domains using hosted DNS. Names and content keep the form they are written in, so `@`, uppercase names, trailing dots on hostnames and TXT content with or without quotes do not show up as changes. Metadata keys starting with `domainchief:` are managed by Domain Chief and are not tracked.
@@ -16,4 +18,5 @@ release.
 - `domainchief_mail_forward` resource to manage mail forwards. Mail forwarding must already be enabled for the domain, the provider does not enable it because it is a paid feature.
 - `domainchief_domain` and `domainchief_domains` data sources to read the domains of the team.
 
-[Unreleased]: https://github.com/chieftools/terraform-provider-domainchief/commits/main
+[Unreleased]: https://github.com/chieftools/terraform-provider-domainchief/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/chieftools/terraform-provider-domainchief/releases/tag/v0.1.0
